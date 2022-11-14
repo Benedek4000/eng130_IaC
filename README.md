@@ -143,7 +143,7 @@ the provision performs the following tasks:
 sudo apt update
 sudo apt upgrade -y
 sudo apt install software-properties-common -y
-sudo apt-add-repository ppa:ansible/ansible -y
+sudo apt-add-repository ppa:ansible/ansible
 sudo apt update
 sudo apt install ansible -y
 sudo rm /etc/ansible/hosts && sudo cp sync/hosts /etc/ansible/hosts
@@ -161,7 +161,7 @@ sudo apt update
 sudo apt upgrade -y
 ```
 
-## Create ssh key between agents and master node
+### Create ssh key between agents and master node
 
 - ssh into master node: `vagrant ssh controller`
 - go to ansible folder: `cd /etc/ansible`
@@ -174,3 +174,18 @@ sudo apt upgrade -y
   - answer `yes`
   - once in db, exit: `exit`
 - test connection: `sudo ansible all -m ping`
+
+### How to copy files from master node to agent node
+
+in master node, use `scp`:  
+`scp -r /home/vagrant/[folder or file part] vagrant@[ip of agent node]:[path of target]`
+
+## Inventory
+
+The Ansible inventory contains the information about the hosts and groups 
+to be used in a playbook.
+
+## Roles
+
+Ansible roles are used to create reusable automation components, 
+like configuration files, templates, tasks and handlers.
