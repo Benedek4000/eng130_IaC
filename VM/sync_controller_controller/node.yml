@@ -1,0 +1,38 @@
+---
+- hosts: web
+  gather_facts: yes
+  become: true
+  tasks:
+  - name: "Add nodejs apt key"
+    apt_key:
+      url: https://deb.nodesource.com/gpgkey/nodesource.gpg.key
+      state: present
+
+  - name: "Add nodejs 12.x ppa for apt repo"
+    apt_repository:
+      repo: deb https://deb.nodesource.com/node_12.x bionic main
+      update_cache: yes
+
+  - name: Install/configure nodejs
+    apt: pkg=nodejs state=present update_cache=yes
+
+  - name: Install pm2
+    npm:
+      name: pm2
+      global: yes
+
+  - name: copy app to web
+    synchronize:
+      src: /home/vagrant/sync_web/app
+      dest: /home/vagrant
+
+  - name: seed db
+    shell: |
+      npm install --prefix /home/vagrant/app
+    environment:
+      DB_HOST: mongodb://192.168.56.13:27017/posts?authSource=admin
+    become_user: root
+
+  - name: start app
+    shell:
+      npm start --prefix /home/vagrant/app

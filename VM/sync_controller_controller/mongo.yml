@@ -1,0 +1,20 @@
+---
+- hosts: db
+  gather_facts: yes
+  become: yes
+  tasks:
+  - name: install mongodb
+    apt: 
+      pkg: mongodb
+      state: present
+  - name: configure mongodb
+    shell: |
+      rm /etc/mongodb.conf
+  - name: configure reverse proxy
+    synchronize:
+      src: /home/vagrant/sync_db/mongodb.conf
+      dest: /etc
+  - name: enable mongodb
+    shell: |
+      systemctl enable mongodb
+      systemctl restart mongodb

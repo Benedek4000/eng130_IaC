@@ -15,7 +15,11 @@
 
        controller.vm.hostname = 'controller'
 
-       controller.vm.synced_folder "./sync_controller", "/home/vagrant/sync"
+       controller.vm.synced_folder "./sync_controller_controller", "/home/vagrant/sync_controller"
+
+       controller.vm.synced_folder "./sync_controller_web", "/home/vagrant/sync_web"
+
+       controller.vm.synced_folder "./sync_controller_db", "/home/vagrant/sync_db"
 
        controller.vm.provision "shell", path: "provision_controller.sh"
 
@@ -33,7 +37,7 @@
         web.vm.hostname = 'web'
         # assigning host name to the VM
 
-        web.vm.provision "shell", path: "provision.sh"
+        web.vm.provision "shell", path: "provision_web.sh"
 
         web.vm.network :private_network, ip: "192.168.33.10"
         #   assigning private IP
@@ -52,7 +56,7 @@
 
         db.vm.network :private_network, ip: "192.168.33.11"
 
-        db.vm.provision "shell", path: "provision.sh"
+        db.vm.provision "shell", path: "provision_db.sh"
 
         #config.hostsupdater.aliases = ["development.db"]
       end
