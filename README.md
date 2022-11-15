@@ -32,7 +32,6 @@ Ansible default folder: `/etc/ansible/hosts`
 - continuous delivery
 - provisioning
 - configuration management
-- 
 
 ## Configuration Management
 
