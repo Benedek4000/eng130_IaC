@@ -1,5 +1,8 @@
+[local]
+localhost ansible_python_interpreter=/usr/bin/python3
+
 [web]
-192.168.33.10 ansible_connection=ssh ansible_ssh_user=vagrant ansible_ssh_pass=vagrant
+ec2-instance ansible_connection=ssh ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/eng130.pem
 
 [db]
-192.168.33.11 ansible_connection=ssh ansible_ssh_user=vagrant ansible_ssh_pass=vagrant
+ec2-instance ansible_connection=ssh ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/eng130.pem

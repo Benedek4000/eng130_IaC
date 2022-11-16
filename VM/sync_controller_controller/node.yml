@@ -39,8 +39,7 @@
       #echo export DB_HOST=mongodb://192.168.33.11:27017/posts >> .bashrc
       #sudo source .bashrc
       export DB_HOST=mongodb://192.168.33.11:27017/posts
-      cd app
-      npm install
+      npm install --prefix /home/vagrant/app
       pm2 kill
 
   #- name: seed db
