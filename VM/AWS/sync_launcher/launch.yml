@@ -1,0 +1,2 @@
+---
+- import_playbook: /home/vagrant/sync_launcher/create_ec2_controller.yml --ask-vault-pass --tags create_ec2

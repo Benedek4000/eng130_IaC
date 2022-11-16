@@ -1,0 +1,39 @@
+---
+- hosts: db
+  gather_facts: yes
+  become: yes
+  tasks:
+  #- name: Add mongo ppa key
+    #apt_key:
+      #url: 'https://www.mongodb.org/static/pgp/server-4.2.asc'
+      #state: present
+  #- name: Add mongo sources list
+    #lineinfile:
+      #line: "deb http://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.2 multiverse"
+      #dest: /etc/apt/sources.list.d/mongodb-org-4.2.list
+      #state: present
+      #create: yes
+  - name: Install mongo
+    apt: 
+      name: mongodb
+      state: present
+  - name: Install mongodb
+    shell: |
+      sudo apt update
+      sudo apt install -y mongodb-org
+      echo "mongodb-org hold" | sudo dpkg --set-selections
+      echo "mongodb-org-server hold" | sudo dpkg --set-selections
+      echo "mongodb-org-shell hold" | sudo dpkg --set-selections
+      echo "mongodb-org-mongos hold" | sudo dpkg --set-selections
+      echo "mongodb-org-tools hold" | sudo dpkg --set-selections
+  - name: configure mongodb
+    shell: |
+      rm /etc/mongodb.conf
+  - name: configure reverse proxy
+    synchronize:
+      src: /home/vagrant/sync_db/mongodb.conf
+      dest: /etc
+  - name: enable mongodb
+    shell: |
+      systemctl enable mongodb
+      systemctl restart mongodb

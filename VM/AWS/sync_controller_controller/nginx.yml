@@ -1,0 +1,23 @@
+---
+- hosts: web
+  gather_facts: yes
+  become: true
+  tasks:
+  - name: Install/configure Nginx web server in web-VM
+    apt: 
+      pkg: nginx
+      state: present
+
+  - name: configure reverse proxy
+    shell: |
+      rm /etc/nginx/sites-available/default
+
+  - name: configure reverse proxy
+    synchronize:
+      src: /home/vagrant/sync_web/default
+      dest: /etc/nginx/sites-available/
+
+  - name: enable nginx
+    shell: |
+      systemctl enable nginx
+      systemctl restart nginx

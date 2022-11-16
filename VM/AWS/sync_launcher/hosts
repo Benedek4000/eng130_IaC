@@ -1,0 +1,5 @@
+[local]
+localhost ansible_python_interpreter=/usr/bin/python3
+
+[controller]
+ec2-instance ansible_host=ec2-ip ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/eng130.pem

@@ -1,0 +1,4 @@
+---
+- import_playbook: /home/vagrant/sync_controller/mongo.yml
+- import_playbook: /home/vagrant/sync_controller/nginx.yml
+- import_playbook: /home/vagrant/sync_controller/node.yml

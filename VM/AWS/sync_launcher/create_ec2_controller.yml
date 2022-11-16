@@ -1,0 +1,97 @@
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+    key_name: eng130_benedek_aws
+    region: eu-west-1
+    image: ami-0a68e18ba7ccba285 # ami-0f93b5fd8f220e428 # https://cloud-images.ubuntu.com/locator/ec2/
+    id: "eng130-benedek-ansible-controller"
+    sec_group: "{{ id }}-sec"
+
+  tasks:
+
+    - name: Facts
+      block:
+
+      - name: Get instances facts
+        ec2_instance_facts:
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          region: "{{ region }}"
+        register: result
+
+      - name: Instances ID
+        debug:
+          msg: "ID: {{ item.instance_id }} - State: {{ item.state.name }} - Public DNS: {{ item.public_dns_name }}"
+        loop: "{{ result.instances }}"
+
+      tags: always
+
+
+    - name: Provisioning EC2 instances
+      block:
+
+      - name: Upload public key to AWS
+        ec2_key:
+          name: "{{ key_name }}"
+          key_material: "{{ lookup('file', '~/.ssh/{{ key_name }}.pub') }}"
+          region: "{{ region }}"
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+
+      - name: Create security group
+        ec2_group:
+          name: "{{ sec_group }}"
+          description: "Sec group for app {{ id }}"
+          # vpc_id: 12345
+          region: "{{ region }}"
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          rules:
+            - proto: tcp
+              ports:
+                - 22
+              cidr_ip: 0.0.0.0/0
+              rule_desc: allow all on ssh port
+        register: result_sec_group
+
+      - name: Provision instance(s)
+        ec2:
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          key_name: "{{ key_name }}"
+          id: "{{ id }}"
+          group_id: "{{ result_sec_group.group_id }}"
+          image: "{{ image }}"
+          instance_type: t2.micro
+          region: "{{ region }}"
+          wait: true
+          count: 1
+          user_data: | 
+            #!/bin/bash/
+            sudo apt update
+            sudo apt upgrade -y
+            sudo apt install software-properties-common -y
+            sudo apt-add-repository ppa:ansible/ansible
+            sudo apt update
+            sudo apt install ansible -y
+            sudo apt install sshpass -y
+            sudo apt install tree -y
+            sudo rm /etc/ansible/hosts && sudo cp sync_controller/hosts /etc/ansible/hosts
+            sudo ansible-playbook ~/sync_controller/create_ec2_web.yml
+            sudo ansible-playbook ~/sync_controller/create_ec2_db.yml
+            sudo ansible-playbook ~/sync_controller/main.yml
+        register: result_instance
+
+      - name: Save controller details
+        shell: |
+          sudo rm /etc/ansible/hosts
+          echo "[local]" >> /etc/ansible/hosts
+          echo "localhost ansible_python_interpreter=/usr/bin/python3" >> /etc/ansible/hosts
+          echo "[controller]" >> /etc/ansible/hosts
+          echo "{{ result_instance.id }} ansible_host={{ result_instance.private_ip }}} ansible_user=ubuntu ansible_ssh_private_key_file=~/.ssh/{{ key_name }}.pub" >> /etc/ansible/hosts
+
+      tags: ['never', 'create_ec2']

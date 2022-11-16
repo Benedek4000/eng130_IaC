@@ -1,0 +1,22 @@
+Vagrant.configure("2") do |config|
+      config.vm.define "launcher" do |l|
+
+       l.vm.box = "bento/ubuntu-18.04"
+
+       l.vm.hostname = 'launcher'
+
+       l.vm.synced_folder "./sync_controller_controller", "/home/vagrant/sync_controller"
+
+       l.vm.synced_folder "./sync_controller_web", "/home/vagrant/sync_web"
+
+       l.vm.synced_folder "./sync_controller_db", "/home/vagrant/sync_db"
+
+       l.vm.provision "shell", path: "provision_launcher.sh"
+
+       l.vm.network :private_network, ip: "192.168.33.13"
+
+       # config.hostsupdater.aliases = ["development.controller"]
+
+      end
+
+end
