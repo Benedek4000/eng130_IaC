@@ -70,7 +70,11 @@ code can be found in VM/Vagrantfile
 
        controller.vm.hostname = 'controller'
 
-       controller.vm.synced_folder "./sync_controller", "/home/vagrant/sync"
+       controller.vm.synced_folder "./sync_controller_controller", "/home/vagrant/sync_controller"
+
+       controller.vm.synced_folder "./sync_controller_web", "/home/vagrant/sync_web"
+
+       controller.vm.synced_folder "./sync_controller_db", "/home/vagrant/sync_db"
 
        controller.vm.provision "shell", path: "provision_controller.sh"
 
@@ -88,7 +92,7 @@ code can be found in VM/Vagrantfile
         web.vm.hostname = 'web'
         # assigning host name to the VM
 
-        web.vm.provision "shell", path: "provision.sh"
+        web.vm.provision "shell", path: "provision_web.sh"
 
         web.vm.network :private_network, ip: "192.168.33.10"
         #   assigning private IP
@@ -107,7 +111,7 @@ code can be found in VM/Vagrantfile
 
         db.vm.network :private_network, ip: "192.168.33.11"
 
-        db.vm.provision "shell", path: "provision.sh"
+        db.vm.provision "shell", path: "provision_db.sh"
 
         #config.hostsupdater.aliases = ["development.db"]
       end
@@ -152,10 +156,10 @@ sudo rm /etc/ansible/hosts && sudo cp sync/hosts /etc/ansible/hosts
 
 ### provision.sh
 
-code can be found in VM/provision.sh
+code can be found in VM/provision_web.sh and in VM/provision_db.sh
 
 the provision performs the following tasks:
-- updates and upgrades the controller machine
+- updates and upgrades the web and db machines
 
 ```commandline
 sudo apt update
@@ -190,3 +194,107 @@ to be used in a playbook.
 
 Ansible roles are used to create reusable automation components, 
 like configuration files, templates, tasks and handlers.
+
+## Launching an EC2 instance from vagrant
+
+add aws access key and secret key:
+- `cd /etc/ansible`
+- `mkdir group_vars/all`
+- `cd group_vars/all`
+- `sudo ansible-vault create pass.yml`
+- insert:
+  - `aws_access_key: [enter aws access key]`
+  - `aws_secret_key: [enter aws secret key]`
+
+create_ec2.yml:
+- creates security group
+- creates instance
+
+```yaml
+---
+
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  vars:
+    key_name: eng130_benedek_aws
+    region: eu-west-1
+    image: ami-0a68e18ba7ccba285 # ami-0f93b5fd8f220e428 # https://cloud-images.ubuntu.com/locator/ec2/
+    id: "eng130-benedek-ansible-web"
+    sec_group: "{{ id }}-sec"
+
+  tasks:
+
+    - name: Facts
+      block:
+
+      - name: Get instances facts
+        ec2_instance_facts:
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          region: "{{ region }}"
+        register: result
+
+      - name: Instances ID
+        debug:
+          msg: "ID: {{ item.instance_id }} - State: {{ item.state.name }} - Public DNS: {{ item.public_dns_name }}"
+        loop: "{{ result.instances }}"
+
+      tags: always
+
+
+    - name: Provisioning EC2 instances
+      block:
+
+      - name: Upload public key to AWS
+        ec2_key:
+          name: "{{ key_name }}"
+          key_material: "{{ lookup('file', '~/.ssh/{{ key_name }}.pub') }}"
+          region: "{{ region }}"
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+
+      - name: Create security group
+        ec2_group:
+          name: "{{ sec_group }}"
+          description: "Sec group for app {{ id }}"
+          # vpc_id: 12345
+          region: "{{ region }}"
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          rules:
+            - proto: tcp
+              ports:
+                - 22
+              cidr_ip: 0.0.0.0/0
+              rule_desc: allow all on ssh port
+            - proto: tcp
+              ports:
+                - 80
+              cidr_ip: 0.0.0.0/0
+              rule_desc: allow http access 
+        register: result_sec_group
+
+      - name: Provision instance(s)
+        ec2:
+          aws_access_key: "{{aws_access_key}}"
+          aws_secret_key: "{{aws_secret_key}}"
+          key_name: "{{ key_name }}"
+          id: "{{ id }}"
+          group_id: "{{ result_sec_group.group_id }}"
+          image: "{{ image }}"
+          instance_type: t2.micro
+          region: "{{ region }}"
+          wait: true
+          count: 1
+
+      tags: ['never', 'create_ec2']
+```
+
+launch using: `sudo ansible-playbook create_ec2.yml --ask-vault-pass --tags create_ec2`
+
+## create launcher to set up controller-web-db on aws
+
+files are in the VM/AWS folder  
+!!!not tested!!!
