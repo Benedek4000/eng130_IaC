@@ -75,6 +75,11 @@
           region: "{{ region }}"
           wait: true
           count: 1
+          user_data: | 
+            #!/bin/bash/
+            sudo apt update
+            sudo apt upgrade -y
+        register: result_instance
 
       - name: Save web details
         shell: |
