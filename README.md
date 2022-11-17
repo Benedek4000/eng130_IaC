@@ -307,6 +307,8 @@ Terraform is an infrastructure as code tool owned by HashiCorp. Users can create
 data centre infrastructure using either the HashiCorp Configuration Language
 or JSON.
 
+![terraform diagram](https://github.com/Benedek4000/eng130_IaC/blob/main/images/terraform.png)
+
 #### Use cases
 
 - build environments
@@ -325,4 +327,4 @@ or JSON.
 - open-source
 - cross-cloud
 
-#### Terraform state
+
