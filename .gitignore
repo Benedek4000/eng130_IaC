@@ -1,2 +1,6 @@
 .idea
 VM/.vagrant
+terraform/.terraform
+terraform/.terraform.lock.hcl
+terrafort/terraform.tfstate
+terraform/terraform.tfstate.bakcup

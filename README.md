@@ -298,3 +298,31 @@ launch using: `sudo ansible-playbook create_ec2.yml --ask-vault-pass --tags crea
 
 files are in the VM/AWS folder  
 !!!not tested!!!
+
+## Infrastructure-as-Code - Orchestration with Terraform
+
+### Terraform
+
+Terraform is an infrastructure as code tool owned by HashiCorp. Users can create and define
+data centre infrastructure using either the HashiCorp Configuration Language
+or JSON.
+
+#### Use cases
+
+- build environments
+- connect multiple clouds
+- application deployment, monitoring and scaling
+- policy compliance and management
+- PaaS
+- support for Kubernetes
+
+#### Who is using it
+
+- mostly DevOps teams
+
+#### Benefits
+
+- open-source
+- cross-cloud
+
+#### Terraform state
