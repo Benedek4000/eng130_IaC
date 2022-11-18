@@ -329,6 +329,8 @@ or JSON.
 
 #### Create VPC-IG-Subnet-RT-SG-Instance
 
+![iac infrastructure diagram](https://github.com/Benedek4000/eng130_IaC/blob/main/images/iac.png)
+
 variable.tf:
 ```Terraform
 variable "vpc_cidr" {
